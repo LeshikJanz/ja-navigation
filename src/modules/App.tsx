@@ -1,10 +1,12 @@
 import React, { Fragment } from "react";
-import Map from "./modules/map/Map";
+import Map from "./map/Map";
+import RoutePanel from "./routePanel/RoutePanel";
 
 export default function App() {
   return (
     <Fragment>
       <Map />
+      <RoutePanel />
     </Fragment>
   );
 }
