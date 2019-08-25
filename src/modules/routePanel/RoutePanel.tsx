@@ -1,5 +1,7 @@
-import React from "react";
+import React, { FormEvent } from "react";
 import styled from "styled-components";
+import { IWaypoint } from "./types";
+import WaypointList from "./WaypointList";
 
 const WaypointField = styled.div`
   display: flex;
@@ -10,57 +12,63 @@ const WaypointField = styled.div`
 
 const startedPointId = "0";
 
-class RoutePanel extends React.Component<{}, { waypoints: {} }> {
+class RoutePanel extends React.Component<
+  {},
+  { newWaypointValue: string; waypoints: IWaypoint[] }
+> {
   state = {
-    waypoints: { [startedPointId]: "" }
+    newWaypointValue: "",
+    waypoints: []
   };
 
-  addDestination = () => {
-    console.log("addDestionation");
+  addDestination = (e: FormEvent<HTMLFormElement>): void => {
+    e.preventDefault();
+    if (!this.state.newWaypointValue) return;
     this.setState(prevState => ({
-      waypoints: {
+      newWaypointValue: "",
+      waypoints: [
         ...prevState.waypoints,
-        [Object.keys(prevState.waypoints).length]: ""
-      }
+        {
+          id: prevState.waypoints.length,
+          value: prevState.newWaypointValue,
+          order: prevState.waypoints.length
+        }
+      ]
     }));
   };
 
   handleWaypointChange = ({ target }: React.ChangeEvent<HTMLInputElement>) => {
-    console.log("target", target);
     if (!target) return;
-    this.setState(prevState => ({
-      waypoints: {
-        ...prevState.waypoints,
-        [target.id]: target.value
-      }
-    }));
+    this.setState({ newWaypointValue: target.value });
   };
 
+  deleteWaypoint = (id: number) =>
+    this.setState(prevState => ({
+      waypoints: prevState.waypoints.filter(waypoint => waypoint.id !== id)
+    }));
+
   render() {
-    const { waypoints } = this.state;
+    const { newWaypointValue, waypoints } = this.state;
     console.log("waypoints", waypoints);
     return (
-      <div>
-        <h1>Waypoints:</h1>
-        {Object.entries(waypoints).map(([id, value]) => (
-          <WaypointField key={id}>
-            <label htmlFor={id}>
-              {id === startedPointId
-                ? "Starting point"
-                : `Point ${Number(id) + 1}`}
-              :{" "}
-            </label>
-            <input
-              id={id}
-              type="text"
-              value={value}
-              onChange={this.handleWaypointChange}
-            />
-          </WaypointField>
-        ))}
-
-        <button onClick={this.addDestination}>Add new destination</button>
-      </div>
+      <form onSubmit={this.addDestination}>
+        <WaypointField>
+          <label htmlFor="waypoint">
+            Enter point {Number(waypoints.length + 1)}:{" "}
+          </label>
+          <input
+            id="waypoint"
+            type="text"
+            value={newWaypointValue}
+            onChange={this.handleWaypointChange}
+          />
+        </WaypointField>
+        <button>Add</button>
+        <WaypointList
+          waypoints={waypoints}
+          deleteWaypoint={this.deleteWaypoint}
+        />
+      </form>
     );
   }
 }
