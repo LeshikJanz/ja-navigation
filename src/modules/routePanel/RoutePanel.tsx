@@ -1,7 +1,9 @@
 import React, { FormEvent } from "react";
 import styled from "styled-components";
-import { IWaypoint } from "./types";
 import WaypointList from "./WaypointList";
+import { reorder } from "./utils";
+
+import { IWaypoint } from "./types";
 
 const WaypointField = styled.div`
   display: flex;
@@ -29,9 +31,8 @@ class RoutePanel extends React.Component<
       waypoints: [
         ...prevState.waypoints,
         {
-          id: prevState.waypoints.length,
-          value: prevState.newWaypointValue,
-          order: prevState.waypoints.length
+          id: new Date().getTime(),
+          value: prevState.newWaypointValue
         }
       ]
     }));
@@ -46,6 +47,20 @@ class RoutePanel extends React.Component<
     this.setState(prevState => ({
       waypoints: prevState.waypoints.filter(waypoint => waypoint.id !== id)
     }));
+
+  reorderWaypoints = result => {
+    if (!result.destination) {
+      return;
+    }
+
+    const waypoints = reorder(
+      this.state.waypoints,
+      result.source.index,
+      result.destination.index
+    );
+
+    this.setState({ waypoints });
+  };
 
   render() {
     const { newWaypointValue, waypoints } = this.state;
@@ -66,6 +81,7 @@ class RoutePanel extends React.Component<
         <button>Add</button>
         <WaypointList
           waypoints={waypoints}
+          reorderWaypoints={this.reorderWaypoints}
           deleteWaypoint={this.deleteWaypoint}
         />
       </form>
