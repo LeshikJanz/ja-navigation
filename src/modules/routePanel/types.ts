@@ -1,4 +1,4 @@
 export interface IWaypoint {
-  id: number,
-  value: string,
+  id: string;
+  value: string;
 }

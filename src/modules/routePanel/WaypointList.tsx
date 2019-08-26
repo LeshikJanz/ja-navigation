@@ -1,6 +1,6 @@
-import React, { Fragment } from "react";
+import React from "react";
 import styled from "styled-components";
-import { DragDropContext, Droppable, Draggable } from "react-beautiful-dnd";
+import { DragDropContext, Droppable, Draggable, DropResult } from "react-beautiful-dnd";
 
 import { IWaypoint } from "./types";
 
@@ -41,43 +41,42 @@ const Cross = styled.button`
   }
 `;
 
-class WaypointList extends React.Component<{
+interface Props {
   waypoints: IWaypoint[];
-  reorderWaypoints: (result: any) => void;
-  deleteWaypoint: (id: number) => void;
-}> {
-  render() {
-    const { waypoints, reorderWaypoints, deleteWaypoint } = this.props;
-    if (!waypoints.length) return null;
-    return (
-      <DragDropContext onDragEnd={reorderWaypoints}>
-        <Droppable droppableId="droppable">
-          {provided => (
-            <div {...provided.droppableProps} ref={provided.innerRef}>
-              <h2>Waypoints:</h2>
-              <WaypointsContainer>
-                {waypoints.map(({ id, value }, index) => (
-                  <Draggable key={id} draggableId={id} index={index}>
-                    {provided => (
-                      <Point
-                        ref={provided.innerRef}
-                        {...provided.draggableProps}
-                        {...provided.dragHandleProps}
-                      >
-                        {index + 1}:&nbsp;<span>{value}</span>
-                        <Cross onClick={() => deleteWaypoint(id)} />
-                      </Point>
-                    )}
-                  </Draggable>
-                ))}
-                {provided.placeholder}
-              </WaypointsContainer>
-            </div>
-          )}
-        </Droppable>
-      </DragDropContext>
-    );
-  }
+  reorderWaypoints: (result: DropResult) => void;
+  deleteWaypoint: (id: string) => void;
+}
+
+function WaypointList({ waypoints, reorderWaypoints, deleteWaypoint }: Props) {
+  if (!waypoints.length) return null;
+  return (
+    <DragDropContext onDragEnd={reorderWaypoints}>
+      <Droppable droppableId="droppable">
+        {provided => (
+          <div {...provided.droppableProps} ref={provided.innerRef}>
+            <h2>Waypoints:</h2>
+            <WaypointsContainer>
+              {waypoints.map(({ id, value }, index) => (
+                <Draggable key={id} draggableId={id} index={index}>
+                  {provided => (
+                    <Point
+                      ref={provided.innerRef}
+                      {...provided.draggableProps}
+                      {...provided.dragHandleProps}
+                    >
+                      {index + 1}:&nbsp;<span>{value}</span>
+                      <Cross onClick={() => deleteWaypoint(id)} />
+                    </Point>
+                  )}
+                </Draggable>
+              ))}
+              {provided.placeholder}
+            </WaypointsContainer>
+          </div>
+        )}
+      </Droppable>
+    </DragDropContext>
+  );
 }
 
 export default WaypointList;

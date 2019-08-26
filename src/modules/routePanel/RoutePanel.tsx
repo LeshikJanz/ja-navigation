@@ -4,6 +4,7 @@ import WaypointList from "./WaypointList";
 import { reorder } from "./utils";
 
 import { IWaypoint } from "./types";
+import { DropResult } from "react-beautiful-dnd";
 
 const WaypointField = styled.div`
   display: flex;
@@ -11,8 +12,6 @@ const WaypointField = styled.div`
   flex-direction: column;
   padding-bottom: 10px;
 `;
-
-const startedPointId = "0";
 
 class RoutePanel extends React.Component<
   {},
@@ -31,7 +30,7 @@ class RoutePanel extends React.Component<
       waypoints: [
         ...prevState.waypoints,
         {
-          id: new Date().getTime(),
+          id: `${new Date().getTime()}`,
           value: prevState.newWaypointValue
         }
       ]
@@ -43,12 +42,12 @@ class RoutePanel extends React.Component<
     this.setState({ newWaypointValue: target.value });
   };
 
-  deleteWaypoint = (id: number) =>
+  deleteWaypoint = (id: string) =>
     this.setState(prevState => ({
       waypoints: prevState.waypoints.filter(waypoint => waypoint.id !== id)
     }));
 
-  reorderWaypoints = result => {
+  reorderWaypoints = (result: DropResult) => {
     if (!result.destination) {
       return;
     }
@@ -64,7 +63,6 @@ class RoutePanel extends React.Component<
 
   render() {
     const { newWaypointValue, waypoints } = this.state;
-    console.log("waypoints", waypoints);
     return (
       <form onSubmit={this.addDestination}>
         <WaypointField>
