@@ -1,9 +1,10 @@
 import React from "react";
-import { runMap } from "./utils/runMap";
+import { runMap } from "./utils";
 
-class Map extends React.Component {
+class Map extends React.Component<{ onMapInit: (result: boolean) => void }> {
   componentDidMount() {
-    runMap();
+    const result = runMap();
+    this.props.onMapInit(!!result);
   }
 
   render() {
@@ -11,4 +12,4 @@ class Map extends React.Component {
   }
 }
 
-export default Map
+export default Map;

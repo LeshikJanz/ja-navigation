@@ -1,45 +1,31 @@
-import React, { FormEvent } from "react";
-import styled from "styled-components";
+import React, { FormEvent, Fragment } from "react";
 import WaypointList from "./WaypointList";
 import { reorder } from "./utils";
 
 import { IWaypoint } from "./types";
 import { DropResult } from "react-beautiful-dnd";
-
-const WaypointField = styled.div`
-  display: flex;
-  max-width: 350px;
-  flex-direction: column;
-  padding-bottom: 10px;
-`;
+import SearchBox from "./SearchBox";
 
 class RoutePanel extends React.Component<
-  {},
-  { newWaypointValue: string; waypoints: IWaypoint[] }
+  { isMapInit: boolean },
+  { waypoints: IWaypoint[] }
 > {
   state = {
-    newWaypointValue: "",
     waypoints: []
   };
 
-  addDestination = (e: FormEvent<HTMLFormElement>): void => {
-    e.preventDefault();
-    if (!this.state.newWaypointValue) return;
+  addDestination = (destination: string, coords: [string, string]): void => {
+    console.log("coords", coords);
     this.setState(prevState => ({
-      newWaypointValue: "",
       waypoints: [
         ...prevState.waypoints,
         {
           id: `${new Date().getTime()}`,
-          value: prevState.newWaypointValue
+          value: destination,
+          coords
         }
       ]
     }));
-  };
-
-  handleWaypointChange = ({ target }: React.ChangeEvent<HTMLInputElement>) => {
-    if (!target) return;
-    this.setState({ newWaypointValue: target.value });
   };
 
   deleteWaypoint = (id: string) =>
@@ -48,9 +34,7 @@ class RoutePanel extends React.Component<
     }));
 
   reorderWaypoints = (result: DropResult) => {
-    if (!result.destination) {
-      return;
-    }
+    if (!result.destination) return;
 
     const waypoints = reorder(
       this.state.waypoints,
@@ -62,27 +46,17 @@ class RoutePanel extends React.Component<
   };
 
   render() {
-    const { newWaypointValue, waypoints } = this.state;
+    if (!this.props.isMapInit) return null;
+    const { waypoints } = this.state;
     return (
-      <form onSubmit={this.addDestination}>
-        <WaypointField>
-          <label htmlFor="waypoint">
-            Enter point {Number(waypoints.length + 1)}:{" "}
-          </label>
-          <input
-            id="waypoint"
-            type="text"
-            value={newWaypointValue}
-            onChange={this.handleWaypointChange}
-          />
-        </WaypointField>
-        <button>Add</button>
+      <Fragment>
+        <SearchBox waypoints={waypoints} addDestination={this.addDestination} />
         <WaypointList
           waypoints={waypoints}
           reorderWaypoints={this.reorderWaypoints}
           deleteWaypoint={this.deleteWaypoint}
         />
-      </form>
+      </Fragment>
     );
   }
 }

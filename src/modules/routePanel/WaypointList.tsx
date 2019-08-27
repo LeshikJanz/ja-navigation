@@ -1,6 +1,12 @@
 import React from "react";
 import styled from "styled-components";
-import { DragDropContext, Droppable, Draggable, DropResult } from "react-beautiful-dnd";
+import {
+  DragDropContext,
+  Droppable,
+  Draggable,
+  DropResult
+} from "react-beautiful-dnd";
+import withSyncedMapPoints from "./withSyncedMapPoints";
 
 import { IWaypoint } from "./types";
 
