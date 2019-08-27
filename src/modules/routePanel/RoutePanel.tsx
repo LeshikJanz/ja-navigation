@@ -1,10 +1,11 @@
 import React, { FormEvent, Fragment } from "react";
-import WaypointList from "./WaypointList";
-import { reorder } from "./utils";
-
-import { IWaypoint } from "./types";
 import { DropResult } from "react-beautiful-dnd";
 import SearchBox from "./SearchBox";
+import WaypointList from "./WaypointList";
+import { reorder } from "./utils/reorder";
+import { routeInstance } from "./utils/routeFormatters";
+
+import { IWaypoint } from "./types";
 
 class RoutePanel extends React.Component<
   { isMapInit: boolean },
@@ -15,7 +16,6 @@ class RoutePanel extends React.Component<
   };
 
   addDestination = (destination: string, coords: [string, string]): void => {
-    console.log("coords", coords);
     this.setState(prevState => ({
       waypoints: [
         ...prevState.waypoints,
@@ -28,10 +28,18 @@ class RoutePanel extends React.Component<
     }));
   };
 
-  deleteWaypoint = (id: string) =>
-    this.setState(prevState => ({
-      waypoints: prevState.waypoints.filter(waypoint => waypoint.id !== id)
-    }));
+  deleteWaypoint = (id: string) => {
+    routeInstance.removePlacemark(this.state.waypoints, id);
+    this.setState(
+      prevState => ({
+        waypoints: prevState.waypoints.filter(waypoint => waypoint.id !== id)
+      }),
+      () => {
+        routeInstance.removeRoute()
+        routeInstance.createRoute(this.state.waypoints)
+      }
+    );
+  };
 
   reorderWaypoints = (result: DropResult) => {
     if (!result.destination) return;
@@ -44,6 +52,10 @@ class RoutePanel extends React.Component<
 
     this.setState({ waypoints });
   };
+
+  // removePointFromMap = (waypointForDelete: any) => {
+  //   window.jaMap.geoObjects.remove(waypointForDelete);
+  // };
 
   render() {
     if (!this.props.isMapInit) return null;

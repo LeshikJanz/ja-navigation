@@ -3,6 +3,7 @@ import styled from "styled-components";
 
 import { IWaypoint } from "./types";
 import withSyncedMapPoints from "./withSyncedMapPoints";
+import { routeInstance } from "./utils/routeFormatters";
 
 const WaypointField = styled.div`
   display: flex;
@@ -15,7 +16,6 @@ class SearchBox extends React.Component<
   {
     waypoints: IWaypoint[];
     addDestination: (waypoint: string, coords: [string, string]) => void;
-    addPointOnMap: (coords: [string, string], bounds: string) => void;
   },
   { searchValue: string; errors: string }
 > {
@@ -32,6 +32,7 @@ class SearchBox extends React.Component<
   geocode = (request: string) => {
     try {
       return window.ymaps.geocode(request, { results: 1 }).then((res: any) => {
+        if (!res.geoObjects) throw new Error("Bad address");
         const geoObject = res.geoObjects.get(0);
         const address = geoObject.getAddressLine();
         const coords = geoObject.geometry.getCoordinates();
@@ -52,14 +53,16 @@ class SearchBox extends React.Component<
     e.preventDefault();
     const { suggest } = e.target.elements;
     if (!suggest) return;
-    const { address, coords, bounds } = await this.geocode(suggest.value || this.state.searchValue);
+    const { address, coords, bounds } = await this.geocode(
+      suggest.value || this.state.searchValue
+    );
     this.props.addDestination(address, coords);
-    this.props.addPointOnMap(coords, bounds);
+    routeInstance.addPlacemark(coords, bounds);
+    routeInstance.createRoute(this.props.waypoints)
     this.setState({ searchValue: "" });
   };
 
   render() {
-    console.log("searchValue", this.state.searchValue);
     const { waypoints } = this.props;
     return (
       <form onSubmit={this.onSubmit}>

@@ -1,4 +1,4 @@
-import { IWaypoint } from "./types";
+import { IWaypoint } from "../types";
 
 export const reorder = (list: IWaypoint[], startIndex: number, endIndex: number): IWaypoint[] => {
   const result = Array.from(list);
