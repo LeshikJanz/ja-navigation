@@ -1,4 +1,4 @@
-function init() {
+export function init() {
   window.jaMap = new window.ymaps.Map("map", {
     center: [55.76, 37.64],
     zoom: 7

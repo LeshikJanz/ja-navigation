@@ -1,0 +1,5 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`RoutePanel component matches snapshot with isMapInit = false 1`] = `ShallowWrapper {}`;
+
+exports[`RoutePanel component matches snapshot with isMapInit = true 1`] = `ShallowWrapper {}`;

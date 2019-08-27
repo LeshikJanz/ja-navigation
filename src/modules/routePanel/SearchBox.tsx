@@ -14,7 +14,11 @@ const WaypointField = styled.div`
 class SearchBox extends React.Component<
   {
     waypoints: IWaypoint[];
-    addDestination: (waypoint: string, coords: [string, string], bounds: string) => void;
+    addDestination: (
+      waypoint: string,
+      coords: [string, string],
+      bounds: string
+    ) => void;
   },
   { searchValue: string; errors: string }
 > {
@@ -34,7 +38,7 @@ class SearchBox extends React.Component<
     this.setState({ searchValue: target.value });
   };
 
-  onSubmit = async (e: FormEvent<HTMLFormElement>) => {
+  onSubmit = async (e: FormEvent<HTMLFormElement> | any) => {
     e.preventDefault();
     const { suggest } = e.target.elements;
     if (!suggest) return;

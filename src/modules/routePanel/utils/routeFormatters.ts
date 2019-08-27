@@ -3,7 +3,9 @@ import { IGeoObject, GeoObject } from "yandex-maps";
 
 const minPointsCount = 2
 
-const getPlacemarkId = (placemark: IGeoObject) => placemark && placemark.properties && placemark.properties._data && placemark.properties._data.iden
+export const getPlacemarkId = (placemark: IGeoObject | any) => placemark.properties &&
+  placemark.properties._data &&
+  placemark.properties._data.iden
 
 const makeRouteInstance = () => {
   let placemarks: IGeoObject[] = []
@@ -58,16 +60,10 @@ const makeRouteInstance = () => {
     if (waypoints.length < minPointsCount) return
     route = new window.ymaps.multiRouter.MultiRoute(
       {
-        referencePoints: waypoints.map(
-          waypoint => waypoint.coords
-        ),
-        params: {
-          results: minPointsCount
-        }
+        referencePoints: waypoints.map(waypoint => waypoint.coords),
+        params: { results: minPointsCount }
       },
-      {
-        boundsAutoApply: true
-      }
+      { boundsAutoApply: true }
     );
     window.jaMap.geoObjects.add(route);
   }
