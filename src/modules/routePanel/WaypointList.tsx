@@ -36,7 +36,7 @@ const Cross = styled.button`
     position: absolute;
     content: " ";
     height: 20px;
-    width: 2px;
+    width: 4px;
     background-color: #333;
   }
   &:before {

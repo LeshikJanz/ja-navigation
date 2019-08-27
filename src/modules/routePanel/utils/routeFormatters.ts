@@ -1,8 +1,11 @@
 import { IWaypoint } from "../types";
+import { IGeoObject } from "yandex-maps";
+
+const minPointsCount = 2
 
 const makeRouteInstance = () => {
-  let placemarks: any[] = []
-  let route: any
+  let placemarks: { geometry: { _coordinates: [string, string] } }[] = []
+  let route: IGeoObject
 
   const addPlacemark = (coordinates: [string, string]) => {
     const placemark = new window.ymaps.Placemark(coordinates);
@@ -21,14 +24,14 @@ const makeRouteInstance = () => {
   };
 
   const createRoute = (waypoints: IWaypoint[]) => {
-    if (waypoints.length < 2) return
+    if (waypoints.length < minPointsCount) return
     route = new window.ymaps.multiRouter.MultiRoute(
       {
         referencePoints: waypoints.map(
           waypoint => waypoint.coords
         ),
         params: {
-          results: 2
+          results: minPointsCount
         }
       },
       {
@@ -38,13 +41,13 @@ const makeRouteInstance = () => {
     window.jaMap.geoObjects.add(route);
   }
 
-  const removeRoute = (waypoints: IWaypoint[]) => {
+  const updateRoute = (waypoints: IWaypoint[]) => {
     window.jaMap.geoObjects.removeAll()
     waypoints.forEach(waypoint => addPlacemark(waypoint.coords))
     createRoute(waypoints)
   }
 
-  return { addPlacemark, removePlacemark, createRoute, removeRoute }
+  return { addPlacemark, removePlacemark, createRoute, updateRoute }
 };
 
 export const routeInstance = makeRouteInstance()

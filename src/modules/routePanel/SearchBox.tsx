@@ -2,7 +2,6 @@ import React, { FormEvent } from "react";
 import styled from "styled-components";
 
 import { IWaypoint } from "./types";
-import withSyncedMapPoints from "./withSyncedMapPoints";
 import { routeInstance } from "./utils/routeFormatters";
 
 const WaypointField = styled.div`
@@ -34,6 +33,7 @@ class SearchBox extends React.Component<
       return window.ymaps.geocode(request, { results: 1 }).then((res: any) => {
         if (!res.geoObjects) throw new Error("Bad address");
         const geoObject = res.geoObjects.get(0);
+        if (!geoObject) throw new Error("Bad address");
         const address = geoObject.getAddressLine();
         const coords = geoObject.geometry.getCoordinates();
         const bounds = geoObject.properties.get("boundedBy");
@@ -58,7 +58,7 @@ class SearchBox extends React.Component<
     );
     this.props.addDestination(address, coords);
     routeInstance.addPlacemark(coords);
-    routeInstance.createRoute(this.props.waypoints)
+    routeInstance.createRoute(this.props.waypoints);
     window.jaMap.setBounds(bounds, {
       checkZoomRange: true
     });
@@ -87,4 +87,4 @@ class SearchBox extends React.Component<
   }
 }
 
-export default withSyncedMapPoints(SearchBox);
+export default SearchBox;

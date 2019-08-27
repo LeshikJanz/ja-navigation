@@ -34,10 +34,7 @@ class RoutePanel extends React.Component<
       prevState => ({
         waypoints: prevState.waypoints.filter(waypoint => waypoint.id !== id)
       }),
-      () => {
-        routeInstance.removeRoute(this.state.waypoints)
-        // routeInstance.createRoute(this.state.waypoints)
-      }
+      () => routeInstance.updateRoute(this.state.waypoints)
     );
   };
 
@@ -50,12 +47,8 @@ class RoutePanel extends React.Component<
       result.destination.index
     );
 
-    this.setState({ waypoints });
+    this.setState({ waypoints }, () => routeInstance.updateRoute(this.state.waypoints));
   };
-
-  // removePointFromMap = (waypointForDelete: any) => {
-  //   window.jaMap.geoObjects.remove(waypointForDelete);
-  // };
 
   render() {
     if (!this.props.isMapInit) return null;
