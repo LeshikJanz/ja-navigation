@@ -57,8 +57,11 @@ class SearchBox extends React.Component<
       suggest.value || this.state.searchValue
     );
     this.props.addDestination(address, coords);
-    routeInstance.addPlacemark(coords, bounds);
+    routeInstance.addPlacemark(coords);
     routeInstance.createRoute(this.props.waypoints)
+    window.jaMap.setBounds(bounds, {
+      checkZoomRange: true
+    });
     this.setState({ searchValue: "" });
   };
 

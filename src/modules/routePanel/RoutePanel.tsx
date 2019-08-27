@@ -35,8 +35,8 @@ class RoutePanel extends React.Component<
         waypoints: prevState.waypoints.filter(waypoint => waypoint.id !== id)
       }),
       () => {
-        routeInstance.removeRoute()
-        routeInstance.createRoute(this.state.waypoints)
+        routeInstance.removeRoute(this.state.waypoints)
+        // routeInstance.createRoute(this.state.waypoints)
       }
     );
   };

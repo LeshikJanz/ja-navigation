@@ -4,15 +4,10 @@ const makeRouteInstance = () => {
   let placemarks: any[] = []
   let route: any
 
-  const addPlacemark = (coordinates: [number, number], bounds: string) => {
+  const addPlacemark = (coordinates: [string, string]) => {
     const placemark = new window.ymaps.Placemark(coordinates);
     placemarks.push(placemark)
     window.jaMap.geoObjects.add(placemark);
-
-    window.jaMap.setBounds(bounds, {
-      checkZoomRange: true
-    });
-    // if (waypoints.length >= 2) this.createRoute();
   };
 
   const removePlacemark = (waypoints: IWaypoint[], waypointId: string) => {
@@ -43,10 +38,10 @@ const makeRouteInstance = () => {
     window.jaMap.geoObjects.add(route);
   }
 
-  const removeRoute = () => {
-    const routeIndex = window.jaMap.geoObjects.indexOf(route);
-    console.log("routeIndex", routeIndex)
-    window.jaMap.geoObjects.remove(window.jaMap.geoObjects.get(routeIndex))
+  const removeRoute = (waypoints: IWaypoint[]) => {
+    window.jaMap.geoObjects.removeAll()
+    waypoints.forEach(waypoint => addPlacemark(waypoint.coords))
+    createRoute(waypoints)
   }
 
   return { addPlacemark, removePlacemark, createRoute, removeRoute }
