@@ -1,6 +1,6 @@
 # Ja Navigation
 
-## Development run
+### Development
 
 ```
 yarn
