@@ -1,26 +1,57 @@
 import { IWaypoint } from "../types";
-import { IGeoObject } from "yandex-maps";
+import { IGeoObject, GeoObject } from "yandex-maps";
 
 const minPointsCount = 2
 
+const getPlacemarkId = (placemark: IGeoObject) => placemark && placemark.properties && placemark.properties._data && placemark.properties._data.iden
+
 const makeRouteInstance = () => {
-  let placemarks: { geometry: { _coordinates: [string, string] } }[] = []
+  let placemarks: IGeoObject[] = []
   let route: IGeoObject
 
-  const addPlacemark = (coordinates: [string, string]) => {
-    const placemark = new window.ymaps.Placemark(coordinates);
-    placemarks.push(placemark)
+  const addPlacemark = (waypoint: IWaypoint) => {
+    const placemark = new window.ymaps.Placemark(waypoint.coords, {
+      balloonContent: waypoint.value,
+      iden: waypoint.id,
+    }, {
+        draggable: true
+      });
+
+    placemarks.push(placemark);
     window.jaMap.geoObjects.add(placemark);
+    return placemark
   };
 
-  const removePlacemark = (waypoints: IWaypoint[], waypointId: string) => {
-    const waypointIndex = waypoints.findIndex(
-      waypoint => waypoint.id === waypointId
-    );
-
-    const placemark = placemarks.find(placemark => placemark.geometry._coordinates === waypoints[waypointIndex].coords)
+  const removePlacemark = (waypointId: string) => {
+    const placemark = placemarks.find(placemark => getPlacemarkId(placemark) === waypointId)
     placemarks = placemarks.filter(p => p !== placemark)
     window.jaMap.geoObjects.remove(placemark)
+  };
+
+  const assignDragEndEvent = async (placemark: GeoObject, updateWaypoint: any) => {
+    placemark.events.add("dragend", async (e: any) => {
+      const thisPlacemark = e.get("target");
+      const coords = thisPlacemark.geometry.getCoordinates();
+      const { address } = await geocode(coords)
+      const waypoints = updateWaypoint(getPlacemarkId(placemark), coords, address)
+      routeInstance.updateRoute(waypoints, updateWaypoint)
+    });
+  };
+
+  const geocode = (request: string) => {
+    try {
+      return window.ymaps.geocode(request, { results: 1 }).then((res: any) => {
+        if (!res.geoObjects) throw new Error("Bad address");
+        const geoObject = res.geoObjects.get(0);
+        if (!geoObject) throw new Error("Bad address");
+        const address = geoObject.getAddressLine();
+        const coords = geoObject.geometry.getCoordinates();
+        const bounds = geoObject.properties.get("boundedBy");
+        return { address, coords, bounds };
+      });
+    } catch (errors) {
+      console.error("errors", errors)
+    }
   };
 
   const createRoute = (waypoints: IWaypoint[]) => {
@@ -41,13 +72,14 @@ const makeRouteInstance = () => {
     window.jaMap.geoObjects.add(route);
   }
 
-  const updateRoute = (waypoints: IWaypoint[]) => {
+  const updateRoute = (waypoints: IWaypoint[], updateWaypoint: any) => {
     window.jaMap.geoObjects.removeAll()
-    waypoints.forEach(waypoint => addPlacemark(waypoint.coords))
+    placemarks = []
+    waypoints.forEach(waypoint => assignDragEndEvent(addPlacemark(waypoint), updateWaypoint))
     createRoute(waypoints)
   }
 
-  return { addPlacemark, removePlacemark, createRoute, updateRoute }
+  return { addPlacemark, removePlacemark, geocode, assignDragEndEvent, createRoute, updateRoute, placemarks }
 };
 
 export const routeInstance = makeRouteInstance()

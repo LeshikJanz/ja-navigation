@@ -14,7 +14,7 @@ const WaypointField = styled.div`
 class SearchBox extends React.Component<
   {
     waypoints: IWaypoint[];
-    addDestination: (waypoint: string, coords: [string, string]) => void;
+    addDestination: (waypoint: string, coords: [string, string], bounds: string) => void;
   },
   { searchValue: string; errors: string }
 > {
@@ -22,27 +22,12 @@ class SearchBox extends React.Component<
     searchValue: "",
     errors: ""
   };
+
   componentDidMount() {
     if (window.ymaps.SuggestView) {
       new window.ymaps.SuggestView("suggest");
     }
   }
-
-  geocode = (request: string) => {
-    try {
-      return window.ymaps.geocode(request, { results: 1 }).then((res: any) => {
-        if (!res.geoObjects) throw new Error("Bad address");
-        const geoObject = res.geoObjects.get(0);
-        if (!geoObject) throw new Error("Bad address");
-        const address = geoObject.getAddressLine();
-        const coords = geoObject.geometry.getCoordinates();
-        const bounds = geoObject.properties.get("boundedBy");
-        return { address, coords, bounds };
-      });
-    } catch (errors) {
-      this.setState({ errors });
-    }
-  };
 
   handleChange = ({ target }: React.ChangeEvent<HTMLInputElement>) => {
     if (!target) return;
@@ -53,15 +38,10 @@ class SearchBox extends React.Component<
     e.preventDefault();
     const { suggest } = e.target.elements;
     if (!suggest) return;
-    const { address, coords, bounds } = await this.geocode(
+    const { address, coords, bounds } = await routeInstance.geocode(
       suggest.value || this.state.searchValue
     );
-    this.props.addDestination(address, coords);
-    routeInstance.addPlacemark(coords);
-    routeInstance.createRoute(this.props.waypoints);
-    window.jaMap.setBounds(bounds, {
-      checkZoomRange: true
-    });
+    this.props.addDestination(address, coords, bounds);
     this.setState({ searchValue: "" });
   };
 

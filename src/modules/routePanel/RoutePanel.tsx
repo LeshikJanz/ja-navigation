@@ -15,27 +15,60 @@ class RoutePanel extends React.Component<
     waypoints: []
   };
 
-  addDestination = (destination: string, coords: [string, string]): void => {
-    this.setState(prevState => ({
-      waypoints: [
-        ...prevState.waypoints,
-        {
-          id: `${new Date().getTime()}`,
-          value: destination,
-          coords
-        }
-      ]
-    }));
+  addDestination = (
+    destination: string,
+    coords: [string, string],
+    bounds: string
+  ): void => {
+    this.setState(
+      prevState => ({
+        waypoints: [
+          ...prevState.waypoints,
+          {
+            id: `${new Date().getTime()}`,
+            value: destination,
+            coords
+          }
+        ]
+      }),
+      () => {
+        const placemark = routeInstance.addPlacemark(
+          this.state.waypoints[this.state.waypoints.length - 1]
+        );
+        routeInstance.assignDragEndEvent(placemark, this.updateWaypoint);
+        routeInstance.createRoute(this.state.waypoints);
+        window.jaMap.setBounds(bounds, {
+          checkZoomRange: true
+        });
+      }
+    );
   };
 
   deleteWaypoint = (id: string) => {
-    routeInstance.removePlacemark(this.state.waypoints, id);
+    routeInstance.removePlacemark(id);
     this.setState(
       prevState => ({
         waypoints: prevState.waypoints.filter(waypoint => waypoint.id !== id)
       }),
-      () => routeInstance.updateRoute(this.state.waypoints)
+      () => routeInstance.updateRoute(this.state.waypoints, this.updateWaypoint)
     );
+  };
+
+  updateWaypoint = (
+    waypointId: string,
+    coords: [string, string],
+    value: string
+  ) => {
+    const waypoints = this.state.waypoints.reduce(
+      (result: IWaypoint[], waypoint: IWaypoint) => {
+        if (waypoint.id === waypointId)
+          return [...result, { ...waypoint, coords, value }];
+        return [...result, waypoint];
+      },
+      []
+    );
+    this.setState({ waypoints });
+    return waypoints;
   };
 
   reorderWaypoints = (result: DropResult) => {
@@ -47,7 +80,9 @@ class RoutePanel extends React.Component<
       result.destination.index
     );
 
-    this.setState({ waypoints }, () => routeInstance.updateRoute(this.state.waypoints));
+    this.setState({ waypoints }, () =>
+      routeInstance.updateRoute(this.state.waypoints, this.updateWaypoint)
+    );
   };
 
   render() {
